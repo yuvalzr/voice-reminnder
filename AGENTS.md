@@ -1,7 +1,30 @@
 ## Cursor Cloud specific instructions
 
-This is a greenfield repository named "voice-reminder" (note: the README spells it "voice-reminnder"). As of initial setup, it contains only a `README.md` and `LICENSE` (MIT). There is no application code, no dependencies, no services, and no tests.
+This is an **Expo React Native** project (SDK 54, React 19, React Native 0.81) named "voice-reminder". It uses file-based routing via `expo-router`, TypeScript with strict mode, and ESLint with the flat config format (`eslint.config.js`).
 
-**Current state:** No build system, package manager, or framework has been chosen yet. Future agents should check for newly added files (`package.json`, `requirements.txt`, `pyproject.toml`, `go.mod`, etc.) to determine the tech stack and adjust setup accordingly.
+### Key commands
 
-**No services to run.** When application code is added, update this file with startup commands, lint/test/build instructions, and any non-obvious caveats discovered during development.
+| Command | Purpose |
+|---|---|
+| `npm install` | Install/refresh dependencies |
+| `npm run start` | Start Expo dev server (Metro bundler) |
+| `npm run web` | Start Expo dev server and open web |
+| `npm run lint` | Run ESLint via `expo lint` |
+| `npm run typecheck` | Run `tsc --noEmit` |
+
+### Project structure
+
+- `app/` — File-based routes (expo-router). `(tabs)/` contains the tab navigator screens.
+- `components/` — Shared React Native components.
+- `constants/` — Theme/color constants.
+- `hooks/` — Custom React hooks (color scheme, theme).
+- `assets/images/` — Static image assets.
+- `scripts/` — Utility scripts (`reset-project.js`).
+
+### Non-obvious notes
+
+- `npm run start` launches Metro on port 8081 by default. Press `w` in the terminal to open the web version.
+- To test in the cloud environment (no physical device), use `npx expo start --web --port 8081` to run in web mode.
+- The `expo-env.d.ts` file and `.expo/` directory are generated at build time and git-ignored.
+- The `tsconfig.json` extends `expo/tsconfig.base`; path alias `@/*` maps to the project root.
+- ESLint uses the flat config format (`eslint.config.js`) with `eslint-config-expo`.
