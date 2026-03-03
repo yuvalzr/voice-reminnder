@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Voice Reminder",
+    "slug": "voice-reminnder",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "voicereminder",
+    "userInterfaceStyle": "automatic",
+    "plugins": ["expo-notifications"],
+    "android": {
+      "permissions": [
+        "RECORD_AUDIO",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ]
+    },
+    "ios": {
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Record voice reminders that include time, location, or integration context.",
+        "NSLocationWhenInUseUsageDescription": "Allow location-based reminder triggers.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow background geofence monitoring for location reminders.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

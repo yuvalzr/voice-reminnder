@@ -1,0 +1,52 @@
+{
+  "name": "voice-reminnder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "expo/AppEntry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuvalzr/voice-reminnder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yuvalzr/voice-reminnder/issues"
+  },
+  "homepage": "https://github.com/yuvalzr/voice-reminnder#readme",
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "8.6.0",
+    "expo": "^55.0.4",
+    "expo-av": "^16.0.8",
+    "expo-linking": "~55.0.7",
+    "expo-location": "~55.1.2",
+    "expo-notifications": "~55.0.10",
+    "expo-task-manager": "~55.0.9",
+    "react": "19.2.0",
+    "react-native": "0.83.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@types/react": "^19.2.14",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~55.0.0",
+    "typescript": "^5.9.3"
+  },
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["expo-av"]
+      }
+    }
+  }
+}
