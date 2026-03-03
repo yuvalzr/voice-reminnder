@@ -89,6 +89,26 @@ The helper will:
 
 This alignment prevents the common "no EAS update branch" failure.
 
+### 3) Run update from GitHub Actions (free option)
+
+This repo includes `.github/workflows/eas-update.yml` for manual updates.
+
+First, add your Expo token as a repo secret:
+
+1. Create token: https://expo.dev/accounts/[your-expo-username]/settings/access-tokens
+2. In GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**
+3. Name: `EXPO_TOKEN`
+4. Value: paste your Expo access token
+
+Then run the workflow:
+
+1. Open **Actions** tab
+2. Select **EAS Update**
+3. Click **Run workflow**
+4. Choose `preview` or `production`
+5. Optionally enter a message
+6. Click **Run workflow**
+
 ## Permission requirements
 
 - Microphone: voice recording.
