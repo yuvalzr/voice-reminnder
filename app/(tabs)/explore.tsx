@@ -1,112 +1,188 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { triggerIntegrationReminders } from '@/src/services/reminderEngine';
+import { loadReminders, saveReminders, subscribeReminders } from '@/src/services/storage';
+import type { IntegrationSource, VoiceReminder } from '@/src/types/reminder';
 
-export default function TabTwoScreen() {
+const INTEGRATION_SOURCES: IntegrationSource[] = ['iot', 'calendar', 'bluetooth', 'nfc', 'custom'];
+
+export default function IntegrationScreen() {
+  const [manualEventKey, setManualEventKey] = useState('');
+  const [manualEventSource, setManualEventSource] = useState<IntegrationSource>('custom');
+  const [integrationReminderCount, setIntegrationReminderCount] = useState(0);
+  const [totalReminderCount, setTotalReminderCount] = useState(0);
+
+  const inputBackground = useThemeColor({ light: '#f8fafc', dark: '#0f172a' }, 'background');
+  const inputTextColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({ light: '#cbd5e1', dark: '#334155' }, 'icon');
+  const mutedText = useThemeColor({ light: '#64748b', dark: '#94a3b8' }, 'icon');
+  const buttonPrimary = useThemeColor({ light: '#0a7ea4', dark: '#38bdf8' }, 'tint');
+
+  const refreshCounts = useCallback(async () => {
+    const reminders = await loadReminders();
+    updateCounts(reminders, setTotalReminderCount, setIntegrationReminderCount);
+  }, []);
+
+  useEffect(() => {
+    void refreshCounts();
+  }, [refreshCounts]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeReminders((reminders) => {
+      updateCounts(reminders, setTotalReminderCount, setIntegrationReminderCount);
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleManualTrigger = useCallback(async () => {
+    const eventKey = manualEventKey.trim();
+    if (!eventKey) {
+      Alert.alert('Missing event key', 'Provide an event key before triggering an integration.');
+      return;
+    }
+
+    const reminders = await loadReminders();
+    const result = await triggerIntegrationReminders(reminders, eventKey, manualEventSource);
+    if (result.triggeredCount === 0) {
+      Alert.alert(
+        'No reminders matched',
+        'No integration reminders matched this event key and source.',
+      );
+      return;
+    }
+
+    await saveReminders(result.reminders);
+    Alert.alert('Triggered', `${result.triggeredCount} reminder(s) were triggered.`);
+  }, [manualEventKey, manualEventSource]);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
+    <ScrollView contentContainerStyle={styles.container}>
+      <ThemedText type="title">Integrations</ThemedText>
+      <ThemedText style={[styles.helperText, { color: mutedText }]}>
+        External systems can trigger reminders by opening a deep link or by calling a bridge in your
+        own app.
+      </ThemedText>
+
+      <ThemedView style={[styles.card, { borderColor }]}>
+        <ThemedText type="subtitle">Deep-link trigger format</ThemedText>
+        <ThemedText style={[styles.codeText, { color: mutedText }]}>
+          voicereminder://trigger/&lt;eventKey&gt;?source=&lt;iot|calendar|bluetooth|nfc|custom&gt;
+        </ThemedText>
+        <ThemedText style={[styles.helperText, { color: mutedText }]}>
+          Example: voicereminder://trigger/garage-opened?source=iot
         </ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
+
+      <ThemedView style={[styles.card, { borderColor }]}>
+        <ThemedText type="subtitle">Manual integration simulation</ThemedText>
+        <TextInput
+          value={manualEventKey}
+          onChangeText={setManualEventKey}
+          placeholder="Event key (example: garage-opened)"
+          placeholderTextColor={mutedText}
+          style={[
+            styles.input,
+            { backgroundColor: inputBackground, color: inputTextColor, borderColor },
+          ]}
         />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
+        <View style={styles.row}>
+          {INTEGRATION_SOURCES.map((sourceOption) => (
+            <Pressable
+              key={sourceOption}
+              onPress={() => setManualEventSource(sourceOption)}
+              style={[
+                styles.pill,
+                {
+                  borderColor,
+                  backgroundColor: manualEventSource === sourceOption ? buttonPrimary : 'transparent',
+                },
+              ]}>
+              <ThemedText style={styles.pillText}>{sourceOption}</ThemedText>
+            </Pressable>
+          ))}
+        </View>
+
+        <Pressable onPress={() => void handleManualTrigger()} style={[styles.button, { backgroundColor: buttonPrimary }]}>
+          <ThemedText style={styles.buttonText}>Trigger external event</ThemedText>
+        </Pressable>
+      </ThemedView>
+
+      <ThemedView style={[styles.card, { borderColor }]}>
+        <ThemedText type="subtitle">Current reminder stats</ThemedText>
+        <ThemedText style={[styles.helperText, { color: mutedText }]}>
+          Total reminders: {totalReminderCount}
         </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
+        <ThemedText style={[styles.helperText, { color: mutedText }]}>
+          Integration reminders: {integrationReminderCount}
         </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
+function updateCounts(
+  reminders: VoiceReminder[],
+  setTotalReminderCount: (count: number) => void,
+  setIntegrationReminderCount: (count: number) => void,
+) {
+  setTotalReminderCount(reminders.length);
+  setIntegrationReminderCount(reminders.filter((item) => item.trigger.type === 'integration').length);
+}
+
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 44,
+    gap: 14,
   },
-  titleContainer: {
+  card: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    gap: 10,
+  },
+  helperText: {
+    lineHeight: 18,
+  },
+  codeText: {
+    fontFamily: 'monospace',
+    fontSize: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  row: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
+  },
+  pill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  pillText: {
+    textTransform: 'capitalize',
+  },
+  button: {
+    borderRadius: 8,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  buttonText: {
+    color: '#f8fafc',
+    fontWeight: '600',
   },
 });
