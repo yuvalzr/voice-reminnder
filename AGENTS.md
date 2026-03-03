@@ -11,6 +11,7 @@ This is an **Expo React Native** project (SDK 54, React 19, React Native 0.81) n
 | `npm run web` | Start Expo dev server and open web |
 | `npm run lint` | Run ESLint via `expo lint` |
 | `npm run typecheck` | Run `tsc --noEmit` |
+| `bash ./scripts/cloud-setup.sh` | Idempotent cloud bootstrap + validation |
 
 ### Project structure
 
@@ -28,3 +29,5 @@ This is an **Expo React Native** project (SDK 54, React 19, React Native 0.81) n
 - The `expo-env.d.ts` file and `.expo/` directory are generated at build time and git-ignored.
 - The `tsconfig.json` extends `expo/tsconfig.base`; path alias `@/*` maps to the project root.
 - ESLint uses the flat config format (`eslint.config.js`) with `eslint-config-expo`.
+- `.cursor/environment.json` runs `scripts/cloud-setup.sh` on cloud-machine startup so dependencies and checks are preconfigured.
+- Reminder-native modules validated in cloud setup: `expo-av`, `expo-location`, `expo-notifications`, `expo-task-manager`, `@react-native-async-storage/async-storage`, `@react-native-community/datetimepicker`.

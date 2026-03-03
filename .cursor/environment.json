@@ -1,0 +1,9 @@
+{
+  "install": "bash ./scripts/cloud-setup.sh",
+  "start": "npm run start",
+  "persistedDirectories": [
+    "node_modules",
+    ".npm",
+    ".expo"
+  ]
+}
