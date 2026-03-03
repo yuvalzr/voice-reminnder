@@ -55,6 +55,40 @@ npm run typecheck
 npm run lint
 ```
 
+## EAS Update setup (fixes "no EAS update branch")
+
+If you see a "no EAS update branch" error, it usually means your update channel is not mapped to a branch yet.
+
+### 1) Login and link project once
+
+```bash
+npx eas-cli login
+npx eas-cli project:init
+```
+
+### 2) Publish using the helper script
+
+This repository includes an update helper that keeps channel and branch names aligned:
+
+```bash
+npm run eas:update:preview -- "Preview update"
+npm run eas:update:production -- "Production update"
+```
+
+You can also pick a custom channel/branch name:
+
+```bash
+npm run eas:update -- staging "Staging update"
+```
+
+The helper will:
+
+- create the channel if needed
+- publish to a branch with the same name
+- map the channel to that branch
+
+This alignment prevents the common "no EAS update branch" failure.
+
 ## Permission requirements
 
 - Microphone: voice recording.

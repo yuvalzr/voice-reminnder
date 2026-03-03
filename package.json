@@ -9,7 +9,10 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas:update": "bash ./scripts/eas-update.sh",
+    "eas:update:preview": "bash ./scripts/eas-update.sh preview",
+    "eas:update:production": "bash ./scripts/eas-update.sh production"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
